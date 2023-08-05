@@ -14,10 +14,60 @@ docker pull apache/apisix:3.2.0-debian
 docker pull apache/apisix:3.2.0-centos
 apache/apisix:2.10.0-alpine
 
-### view upstreams
-``` shell
-curl "http://apisix-admin-hello-openshift.apps-crc.testing/apisix/admin/upstreams" \
+### view routes
+```shell
+curl "http://apisix-admin-hello-openshift.apps-crc.testing/apisix/admin/routes" -H "X-API-KEY: edd1c9f034335f136f87ad84b625c8f1" -X GET
+```
+---
+### create route1 - IP 
+```shell
+curl "http://apisix-admin-hello-openshift.apps-crc.testing/apisix/admin/routes/1" \
+-H "X-API-KEY: edd1c9f034335f136f87ad84b625c8f1" -X PUT -d '
+{
+  "methods": ["GET"],
+  "uri": "/route1",
+  "upstream": {
+    "type": "roundrobin",
+    "nodes": {
+      "192.168.3.34:9081": 1,
+      "192.168.3.34:9082": 2
+    }
+  }
+}'
+```
+### view the route1
+```shell
+curl "http://apisix-admin-hello-openshift.apps-crc.testing/apisix/admin/routes/1" \
 -H "X-API-KEY: edd1c9f034335f136f87ad84b625c8f1" -X GET
+```
+### test the route1
+``` shell
+curl -i -X GET "http://apisix-gateway-hello-openshift.apps-crc.testing/route1"
+```
+---
+### create route2 - openshift route
+```shell
+curl "http://apisix-admin-hello-openshift.apps-crc.testing/apisix/admin/routes/2" \
+-H "X-API-KEY: edd1c9f034335f136f87ad84b625c8f1" -X PUT -d '
+{
+  "methods": ["GET"],
+  "uri": "/route2",
+  "upstream": {
+    "type": "roundrobin",
+    "nodes": {
+      "baidu.com:80" : 1
+    }
+  }
+}'
+```
+### view the route2
+```shell
+curl "http://apisix-admin-hello-openshift.apps-crc.testing/apisix/admin/routes/2" \
+-H "X-API-KEY: edd1c9f034335f136f87ad84b625c8f1" -X GET
+```
+### test the route2
+``` shell
+curl -i -X GET "http://apisix-gateway-hello-openshift.apps-crc.testing/route2"
 ```
 
 ### create 1 upstreams
@@ -74,20 +124,6 @@ curl "http://apisix-admin-hello-openshift.apps-crc.testing/apisix/admin/routes/j
 -H "X-API-KEY: edd1c9f034335f136f87ad84b625c8f1" -X DELETE
 ```
 
-### test the routes
-``` shell
-curl -i -X POST "http://apisix-gateway-hello-openshift.apps-crc.testing/anything/foo"
-```
-```shell
-curl  "http://apisix-gateway-hello-openshift.apps-crc.testing/anything/foo?arg=10"
-```
-
-``` shell
-curl -i -X POST "http://apisix-gateway-hello-openshift.apps-crc.testing/test"
-```
-```shell
-curl -i "http://apisix-gateway-hello-openshift.apps-crc.testing/"
-```
 
 ### enable limit plugin
 ```shell
